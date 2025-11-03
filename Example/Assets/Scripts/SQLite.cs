@@ -1490,6 +1490,33 @@ namespace SQLite4Unity3d
 			var q = string.Format ("delete from \"{0}\" where \"{1}\" = ?", map.TableName, pk.Name);
 			return Execute (q, pk.GetValue (objectToDelete));
 		}
+		
+		/// <summary>
+		/// Deletes multiple objects from the database within a single transaction.
+		/// </summary>
+		/// <param name="objects">
+		/// A collection of objects to delete. Each object must have a primary key designated using the PrimaryKeyAttribute.
+		/// </param>
+		/// <returns>
+		/// The total number of rows deleted across all objects.
+		/// </returns>
+		/// <remarks>
+		/// If any delete operation within the transaction fails, the entire transaction will be rolled back.
+		/// Null objects in the collection are silently skipped.
+		/// </remarks>
+		public int Delete(System.Collections.IEnumerable objects)
+		{
+			var c = 0;
+			RunInTransaction(() =>
+			{
+				foreach (var r in objects)
+				{
+					if(r != null)
+						c += Delete(r);
+				}
+			});
+			return c;
+		}
 
 		/// <summary>
 		/// Deletes the object with the specified primary key.
